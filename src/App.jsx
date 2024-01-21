@@ -1,33 +1,47 @@
-import {GoogleMap, useLoadScript} from "@react-google-maps/api"
-import { useMemo } from "react"
-import "./App.css"
+/* eslint-disable no-undef */
+import { GoogleMap, useJsApiLoader } from "@react-google-maps/api"
+import { useCallback, useState } from "react"
+
+const containerStyle = {
+  width: '400px',
+  height: '400px'
+}
+const center ={
+  lat: -3.745,
+  lng: -38.523
+}
 
 const App = () => {
-  const {isloaded, loadError} = useLoadScript({
-    // eslint-disable-next-line no-undef
-    googleMapsApiKey : process.env.GOOGLE_API_KEY
+  const  {isLoaded} = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.API_KEY
   })
-  console.log("loaderror", loadError)
-  console.log("isloaded", isloaded)
+  console.log("isloaded", isLoaded)
 
-  const center = useMemo(()=>(
-    {lat: 18.52043, lng:73.856743}
-  ),[])
+  const [map, setMap]= useState(null)
+
+  const onLoad = useCallback(map =>{
+    const bounds = new window.google.maps.LatLngBounds(center);
+    map.fitBounds(bounds)
+
+    setMap(map)
+  },[])
+
+  const onUnmount = useCallback(map=>{
+    setMap(null)
+  },[])
 
   return (
-    <div className="h-screen w-screen">
-      {!isloaded ? (
-        <h1>Loading...</h1>
-      ):(
-        <GoogleMap
-          mapContainerClassName = "map-container"
-          center = {center}
-          zoom = {10}
-        />
-      )
-      }
-      
-    </div>
+    isLoaded ? (
+      <GoogleMap 
+        mapContainerClassName={containerStyle}
+        center={center}
+        zoom={10}
+        onLoad={onLoad}
+        onUnmount={onUnmount}
+        >
+      </GoogleMap> 
+    ) : <div>Loading ...</div>
   )
 }
 
